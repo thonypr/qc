@@ -92,7 +92,7 @@ def create_task():
     # add also creation of the states for the new task
     db_controller.add_state("VIEW_{id}".format(id=output['id']))
     # and creating a rating-state for that task
-    db_controller.add_state("RATE_{id}".format(id=output['id']))
+    # db_controller.add_state("RATE_{id}".format(id=output['id']))
     # db_controller.add_state("FINISH_{id}".format(id=output['id']))
 
     return jsonify({'result': output}), 201

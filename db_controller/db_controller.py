@@ -105,6 +105,25 @@ class Resource(Base):
         return json.loads(data)
 
 
+class ResourceAnswer(Base):
+    __tablename__ = "resource_answer"
+    id = Column(Integer, primary_key=True)
+    tg_id = Column(String(70))
+    type = Column(String(20))
+    caption = Column(String(100))
+    task_id = Column(Integer, ForeignKey('tasks.id'))
+    ForeignKeyConstraint(['task_id'], ['tasks.id'])
+
+    def __init__(self, tg_id, type, task_id, caption):
+        self.tg_id = tg_id
+        self.type = type
+        self.task_id = task_id,
+        self.caption = caption
+
+    def json_to_dict(self, data):
+        return json.loads(data)
+
+
 class Ratings(Base):
     __tablename__ = 'ratings'
     # id = Column(Integer, primary_key=True)
@@ -172,6 +191,11 @@ def get_all_states():
     return session.query(State).all()
 
 
+def get_state_by_id(id):
+    session = Session()
+    return session.query(State).filter_by(id=id).first()
+
+
 def add_state(name):
     session = Session()
     state = State(name)
@@ -190,9 +214,14 @@ def get_user_by_tgid(tg_id):
     return session.query(TGUser).filter_by(tg_id=tg_id).first()
 
 
-def get_user_by_id(id):
+def get_user_by_id(state_id):
     session = Session()
-    return session.query(TGUser).filter_by(id=id).first()
+    return session.query(TGUser).filter_by(id=state_id).first()
+
+
+def get_user_by_tgid(tgid):
+    session = Session()
+    return session.query(TGUser).filter_by(tg_id=tgid).first()
 
 
 def add_user(tg_id, tg_first_name, tg_last_name, tg_nick, state):
@@ -205,7 +234,12 @@ def add_user(tg_id, tg_first_name, tg_last_name, tg_nick, state):
 
 def get_resources_for_task_id(task_id):
     session = Session()
-    return session.query(Resource).filter_by(id=task_id)
+    return session.query(Resource).filter_by(task_id=task_id)
+
+
+def get_resources_answer_for_task_id(task_id):
+    session = Session()
+    return session.query(ResourceAnswer).filter_by(task_id=task_id)
 
 
 def add_resource(tg_id, type, task_id, caption):
@@ -214,6 +248,14 @@ def add_resource(tg_id, type, task_id, caption):
     session.add(new_resource)
     session.commit()
     return session.query(Resource).order_by(Resource.id.desc()).first()
+
+
+def add_answer_resource(tg_id, type, task_id, caption):
+    session = Session()
+    new_resource = ResourceAnswer(tg_id, type, task_id, caption)
+    session.add(new_resource)
+    session.commit()
+    return session.query(ResourceAnswer).order_by(ResourceAnswer.id.desc()).first()
 
 
 def update_user_state_by_id(tg_id, state_id):

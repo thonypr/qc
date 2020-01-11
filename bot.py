@@ -11,6 +11,7 @@ import api
 
 from sqlalchemy import inspect
 
+from bot_debugger import debug
 from db_controller import db_controller
 
 
@@ -39,14 +40,14 @@ def refresh_states():
 # states = {int(k):int(v) for k,v in states.items()}
 #       Your bot code below
 
-def makeAdminKeyboard():
+def makeTaskKeyboard():
     markup = types.InlineKeyboardMarkup()
 
-    list = ["add_task"]
+    list = ["Узнать ответ"]
     if list:
         for item in list:
             markup.add(types.InlineKeyboardButton(text=item,
-                                                  callback_data="a_{code}".format(code=item)))
+                                                  callback_data="answer"))
 
     return markup
 
@@ -65,94 +66,138 @@ def makeKeyboard(list):
 def makeRatingKeyboard(task_id):
     markup = types.InlineKeyboardMarkup()
 
-    list = [1, 2, 3, 4, 5, "?"]
+    list = [{"code": 1, "text": "Не понравился"},
+            {"code": 2, "text": "Неплохо, но можно и лучше"},
+            {"code": 3, "text": "Ни рыба - ни мясо"},
+            {"code": 4, "text": "Понравился"},
+            {"code": 5, "text": "Супер! Побольше бы таких!"},
+            {"code": 0, "text": "Затрудняюсь оценить"}]
 
     for item in list:
-        markup.add(types.InlineKeyboardButton(text=item,
-                                              callback_data="r{id}_{task_id}".format(id=item, task_id=task_id)))
+        markup.add(types.InlineKeyboardButton(text=item["text"],
+                                              callback_data="r{id}_{task_id}".format(id=item["code"], task_id=task_id)))
 
     return markup
 
-task_data = {
-    "name" : None,
-    "regexp": "no",
-    "congrats": "no",
-    "text": "no",
-    "resources": [],
-    "finished": False
-}
 
-countert = 1
+task_name = ""
+task_descr = ""
+task_reg = ""
+task_congrat = ""
+task_res = []
+answ_res = []
+task_finished = False
+new_task_id = 0
 
 add_task_state = 1
 
-@bot.message_handler(func=lambda msg: msg.from_user.id == 235486635)
+
+@bot.message_handler(func=lambda msg: msg.from_user.id == 235486635 and msg.text == "add")
 def add_task(message):
     to = message.from_user.id
-    if not task_data["name"]:
-        bot.send_message(chat_id=to,
-                         text="Введи название задания",
-                         parse_mode='HTML')
-        task_data["name"] = "yes"
+    bot.send_message(to, "Введи название таски")
+    bot.register_next_step_handler(message, get_name)
+
+
+def get_name(message):
+    global task_name
+    task_name = message.text
+    bot.send_message(message.from_user.id, 'Укажи текст задания')
+    bot.register_next_step_handler(message, get_descr)
+
+
+def get_descr(message):
+    global task_descr
+    task_descr = message.text
+    bot.send_message(message.from_user.id, 'Укажи регулярку под ответ')
+    bot.register_next_step_handler(message, get_regex)
+
+
+def get_regex(message):
+    global task_reg
+    task_reg = message.text
+    bot.send_message(message.from_user.id, 'Укажи поздравление для задания')
+    bot.register_next_step_handler(message, get_congrat)
+
+
+def get_congrat(message):
+    global task_congrat
+    task_congrat = message.text
+    bot.send_message(message.from_user.id, 'Скинь ресурсы под задание или напиши no')
+    bot.register_next_step_handler(message, get_resource)
+
+
+def get_resource(message):
+    global task_res
+    global new_task_id
+    res_id = ""
+    res_type = ""
+    res_caption = ""
+    if message.content_type == "text" and message.text == "no":
+        # we need to actually add task now to database
+        task_in_db = db_controller.add_task(task_descr, task_reg, True, task_name, task_congrat)
+        new_task_id = task_in_db.id
+        db_controller.add_state("VIEW_{id}".format(id=task_in_db.id))
+        # add resources
+        for res in task_res:
+            resource_in_db = db_controller.add_resource(res["res_id"], res["res_type"], task_in_db.id,
+                                                        res["res_caption"])
+            bot.send_message(message.from_user.id, 'Ресурс {id} добавлен!'.format(id=res["res_id"]))
+        bot.send_message(message.from_user.id, 'Скинь ресурсы ответа на задание или напиши no')
+        bot.register_next_step_handler(message, get_answer_resources)
     else:
-
-
-    if task_data["name"] == "yes":
-        task_data["name"] = u'{}'.format(message.text)
-        return
-
-    if task_data["regexp"] == "no":
-        bot.send_message(chat_id=to,
-                         text="Введи формат ответа",
-                         parse_mode='HTML')
-        return
-    if task_data["regexp"] == "no":
-        task_data["regexp"] = u'{}'.format(message.text)
-        return
-
-    if task_data["congrats"] == "no":
-        bot.send_message(chat_id=to,
-                         text="Введи поздравление",
-                         parse_mode='HTML')
-        return
-    if task_data["congrats"] == "no":
-        task_data["congrats"] = u'{}'.format(message.text)
-        return
-
-    if task_data["text"] == "no":
-        bot.send_message(chat_id=to,
-                         text="Введи текст задания",
-                         parse_mode='HTML')
-        return
-    if task_data["text"] == "no":
-        task_data["text"] = u'{}'.format(message.text)
-        return
-
-    if not task_data["finished"]:
-        bot.send_message(chat_id=to,
-                         text="Скинь медиа или введи no",
-                         parse_mode='HTML')
-        return
-    if message.text is not "no":
-        res_id = ""
         if message.content_type == "photo":
             res_id = message.photo[0].file_id
-            #todo: add captions hamdling
+            res_type = "photo"
+            res_caption = message.caption
         elif message.content_type == "audio":
             res_id = message.audio[0].file_id
+            res_type = "audio"
+            res_caption = message.caption
         elif message.content_type == "document":
-            res_id = message.document[0].file_id
-        task_data["resources"].append(res_id)
+            res_id = message.document.file_id
+            res_type = "document"
+            res_caption = message.caption
+        res_item = {"res_id": res_id, "res_type": res_type, "res_caption": res_caption}
+
+        task_res.append(res_item)
+        bot.send_message(message.from_user.id, 'Скинь ресурсы под задание или напиши no')
+        bot.register_next_step_handler(message, get_resource)
+
+
+def get_answer_resources(message):
+    global answ_res
+    global new_task_id
+
+    res_id = ""
+    res_type = ""
+    res_caption = ""
+    if message.content_type == "text" and message.text == "no":
+        # add resources to answers
+        for res in answ_res:
+            resource_in_db = db_controller.add_answer_resource(res["res_id"], res["res_type"], new_task_id,
+                                                               res["res_caption"])
+            bot.send_message(message.from_user.id, 'Ресурс {id} добавлен!'.format(id=res["res_id"]))
+        bot.send_message(message.from_user.id, 'Задание добавлено!')
         return
     else:
-        task_data["finished"] = True
-        return
-    if task_data["finished"]:
-        # all data is preset
-        # now we can create a task
-        task_in_db = db_controller.add_task(task_data["text"], task_data["regexp"], True, task_data["name"], task_data["congrats"])
-        # and then add resources to it when we will knew it's id
-        i = 0
+        if message.content_type == "photo":
+            res_id = message.photo[0].file_id
+            res_type = "photo"
+            res_caption = message.caption
+        elif message.content_type == "audio":
+            res_id = message.audio[0].file_id
+            res_type = "audio"
+            res_caption = message.caption
+        elif message.content_type == "document":
+            res_id = message.document.file_id
+            res_type = "document"
+            res_caption = message.caption
+        res_item = {"res_id": res_id, "res_type": res_type, "res_caption": res_caption}
+
+        answ_res.append(res_item)
+        bot.send_message(message.from_user.id, 'Скинь ресурсы ответа под задание или напиши no')
+        bot.register_next_step_handler(message, get_answer_resources)
 
 
 @bot.message_handler(content_types=["sticker", "pinned_message", "photo", "audio"])
@@ -184,6 +229,7 @@ def handle_start(message):
         # add this user to database
         # todo: smh get id of the init state
         db_controller.add_user(to, first_name, last_name, username, 1)
+        debug(to, first_name, last_name, username, "Started!")
     # prepare set of available tasks
     available_tasks = db_controller.get_all_available_tasks_for_user(to)
     if available_tasks:
@@ -206,11 +252,6 @@ def handle_text(message):
     last_name = message.from_user.last_name
     username = message.from_user.username
     text = u'{}'.format(message.text)
-    # firstly check if it's admin
-    if to == 235486635:
-        keys = makeAdminKeyboard()
-        bot.send_message(chat_id=to,
-                         reply_markup=keys)
     # check if we have a user
     user = db_controller.get_user_by_tgid(to)
     if user:
@@ -244,6 +285,10 @@ def handle_text(message):
             # we gotta check the input with validation rules
 
             validation = task.answer_pattern
+
+            debug(to, first_name, last_name,
+                  username, "@{login} says {text} for a {task_name}"
+                  .format(login=username, text=message.text, task_name=task.name))
             # todo: need to check if there is a custom rules
             if validation == "custom":
                 print("it's a custom task - always true!")
@@ -255,16 +300,29 @@ def handle_text(message):
                     bot.send_message(chat_id=to,
                                      text=task.congrat,
                                      parse_mode='HTML')
+                    resources_answer = db_controller.get_resources_answer_for_task_id(task_id)
+                    for resource in resources_answer:
+                        if resource.type == "photo":
+                            bot.send_photo(chat_id=to,
+                                           photo=resource.tg_id,
+                                           caption=resource.caption)
+                        elif resource.type == "audio":
+                            bot.send_audio(chat_id=to,
+                                           audio=resource.tg_id,
+                                           caption=resource.caption)
+                        elif resource.type == "document":
+                            bot.send_document(chat_id=to,
+                                              data=resource.tg_id,
+                                              caption=resource.caption)
                     # mark task as SOLVED for that specific user
                     db_controller.mark_task_as_solved_for_user(to, task_id)
+                    debug(to, first_name, last_name, username,
+                          "@{login} solved {task_name}".format(login=username, task_name=task.name))
                     # user can rate currently solved task
                     # show rating keyboard for currently solved task
                     rates = makeRatingKeyboard(task_id)
                     bot.send_message(chat_id=to,
-                                     text="Как тебе вопрос (оцени по возрастающей шкале)?\n"
-                                          "1 - Так себе, фу\n"
-                                          "5 - Супер! Побольше бы таких!\n"
-                                          "? - Затрудняюсь ответить",
+                                     text="Как тебе вопрос (оцени по возрастающей шкале)?",
                                      parse_mode='HTML',
                                      reply_markup=rates)
                     # todo: change exactly to WELCOME state
@@ -274,10 +332,10 @@ def handle_text(message):
                     # todo: FOR USER and that are NOT SOLVED by him!
                     available_tasks = db_controller.get_all_available_tasks_for_user(to)
                     if available_tasks:
-                        keys = makeKeyboard(available_tasks)
+                        # keys = makeKeyboard(available_tasks)
                         bot.send_message(chat_id=to,
-                                         text="Доступные для решения задания",
-                                         reply_markup=keys,
+                                         text="Для просмотра доступных заданий жми /start",
+                                         # reply_markup=keys,
                                          parse_mode='HTML')
                     else:
                         bot.send_message(chat_id=to,
@@ -302,6 +360,11 @@ def handle_text(message):
                                               caption=resource.caption)
                     bot.send_message(chat_id=to,
                                      text=task.task,
+                                     reply_markup=makeTaskKeyboard(),
+                                     parse_mode='HTML')
+                    bot.send_message(chat_id=to,
+                                     text="Для просмотра доступных заданий жми /start",
+                                     # reply_markup=keys,
                                      parse_mode='HTML')
 
 
@@ -348,20 +411,34 @@ def handle_query(call):
                                   caption=resource.caption)
         bot.send_message(chat_id=call.from_user.id,
                          text=task.task,
+                         reply_markup=makeTaskKeyboard(),
+                         parse_mode='HTML')
+        bot.send_message(chat_id=call.from_user.id,
+                         text="Для просмотра доступных заданий жми /start",
+                         # reply_markup=keys,
                          parse_mode='HTML')
         # and switch state for a user
         state_id = list(states.keys())[list(states.values()).index("VIEW_{id}".format(id=task_id))]
         db_controller.update_user_state_by_id(call.from_user.id, state_id)
+        # change it's text to avoid double clicking
+        bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
+                              text="Для возврата к списку заданий жми /start")
     elif call.data.startswith("r"):
         rate_value = call.data.split("_")[0][1:]
         task_id = call.data.split("_")[1]
         # now set it to a corresponding table that user marked task
-        if rate_value == "?":
-            rate_value = 0
+        # if rate_value == "?":
+        #     rate_value = 0
         db_controller.add_rating_for_task_from_user(rate_value, call.from_user.id, task_id)
-        bot.answer_callback_query(callback_query_id=call.id,
-                                  show_alert=True,
-                                  text="Спасибо!")
+        # bot.answer_callback_query(callback_query_id=call.id,
+        #                           show_alert=True,
+        #                           text="Спасибо!")
+        bot.answer_callback_query(callback_query_id=call.id, show_alert=False, text="Спасибо!")
+        bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
+                              text="Оценено задание {task} в {rate}".format(
+                                  task=task_id,
+                                  rate=rate_value
+                              ))
     # process admin commands
     elif call.data.startswith("a_"):
         # get command type
@@ -369,6 +446,64 @@ def handle_query(call):
         if command == "add_task":
             bot.send_message(chat_id=call.from_user.id,
                              text="Введи имя задания",
+                             parse_mode='HTML')
+    elif call.data == "answer":
+        state_id = db_controller.get_user_by_tgid(call.from_user.id).state_id
+        state = db_controller.get_state_by_id(state_id).name
+        task_id = state.split("_")[1]
+        task = db_controller.get_task_by_id(task_id)
+
+        to = call.from_user.id
+        first_name = call.from_user.first_name
+        last_name = call.from_user.last_name
+        username = call.from_user.username
+        debug(to, first_name, last_name,
+              username, "@{login} cheated on {task_name}"
+              .format(login=call.from_user.username, task_name=task.name))
+        print("CORRECT!")
+        bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
+                              text="Ответ:")
+        bot.send_message(chat_id=call.from_user.id,
+                         text=task.congrat,
+                         parse_mode='HTML')
+        resources_answer = db_controller.get_resources_answer_for_task_id(task_id)
+        for resource in resources_answer:
+            if resource.type == "photo":
+                bot.send_photo(chat_id=call.from_user.id,
+                               photo=resource.tg_id,
+                               caption=resource.caption)
+            elif resource.type == "audio":
+                bot.send_audio(chat_id=call.from_user.id,
+                               audio=resource.tg_id,
+                               caption=resource.caption)
+            elif resource.type == "document":
+                bot.send_document(chat_id=call.from_user.id,
+                                  data=resource.tg_id,
+                                  caption=resource.caption)
+        # mark task as SOLVED for that specific user
+        db_controller.mark_task_as_solved_for_user(call.from_user.id, task_id)
+        # user can rate currently solved task
+        # show rating keyboard for currently solved task
+        rates = makeRatingKeyboard(task_id)
+        bot.send_message(chat_id=call.from_user.id,
+                         text="Как тебе вопрос?",
+                         parse_mode='HTML',
+                         reply_markup=rates)
+        # todo: change exactly to WELCOME state
+        db_controller.update_user_state_by_id(call.from_user.id, 1)
+
+        # prepare set of available tasks
+        # todo: FOR USER and that are NOT SOLVED by him!
+        available_tasks = db_controller.get_all_available_tasks_for_user(call.from_user.id)
+        if available_tasks:
+            # keys = makeKeyboard(available_tasks)
+            bot.send_message(chat_id=call.from_user.id,
+                             text="Для просмотра доступных заданий жми /start",
+                             # reply_markup=keys,
+                             parse_mode='HTML')
+        else:
+            bot.send_message(chat_id=call.from_user.id,
+                             text="Ого! У меня нет больше для тебя задач!",
                              parse_mode='HTML')
 
 
