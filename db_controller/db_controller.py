@@ -1,6 +1,6 @@
 import json
 import os
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse
 
 from sqlalchemy import create_engine, ForeignKey, ForeignKeyConstraint
 from sqlalchemy.ext.declarative import declarative_base
@@ -17,7 +17,7 @@ DATABASES = {}
 url = os.environ['JAWSDB_URL']
 print("TEST!" + url)
 if 'JAWSDB_URL' in os.environ:
-    url = os.environ['JAWSDB_URL']
+    url = urlparse(os.environ['JAWSDB_URL'])
     print(DATABASES)
 
     # Ensure default database exists.
