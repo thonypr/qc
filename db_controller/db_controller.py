@@ -17,7 +17,7 @@ DATABASES = {}
 url = os.environ['JAWSDB_URL']
 print("TEST!" + url)
 if 'JAWSDB_URL' in os.environ:
-    url = urljoin().urlparse(os.environ['JAWSDB_URL'])
+    url = os.environ['JAWSDB_URL']
     print(DATABASES)
 
     # Ensure default database exists.
