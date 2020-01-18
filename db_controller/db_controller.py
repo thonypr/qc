@@ -7,6 +7,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship, backref
 from sqlalchemy.interfaces import PoolListener
 from settings import DATABASES
+from sqlalchemy.dialects.postgresql import JSON
 
 
 class ForeignKeysListener(PoolListener):
@@ -38,12 +39,13 @@ name = DATABASES['default']['NAME']
 name = "p29qne1tj1q5bjkw"
 url = DATABASES['default']['HOST']
 port = DATABASES['default']['PORT']
-engine = create_engine('mysql+mysqldb://{login}:{password}@{url}:{port}/{name}'.format(
+# engine = create_engine('mysql+pymysql://{login}:{password}@{url}:{port}/{name}'.format(
+# postgresql://scott:tiger@localhost/mydatabase
+engine = create_engine('postgresql://{login}:{password}@{url}/{name}'.format(
     login=login,
     password=password,
     name=name,
-    url=url,
-    port=port), echo=True)
+    url=url), echo=True)
 
 Base = declarative_base()
 from sqlalchemy import Table, Column, Integer, String, MetaData, DateTime, Boolean, BigInteger
