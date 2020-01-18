@@ -17,7 +17,7 @@ DATABASES = {}
 url = urljoin().urlparse(os.environ['DATABASE_URL'])
 print(url)
 if 'DATABASE_URL' in os.environ:
-    url = urljoin().urlparse(os.environ['DATABASE_URL'])
+    url = os.environ['DATABASE_URL']
     print(DATABASES)
 
     # Ensure default database exists.
