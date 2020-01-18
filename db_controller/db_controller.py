@@ -16,8 +16,8 @@ class ForeignKeysListener(PoolListener):
 DATABASES = {}
 url = os.environ['JAWSDB_URL']
 print("TEST!" + url)
-if 'DATABASE_URL' in os.environ:
-    url = urljoin().urlparse(os.environ['DATABASE_URL'])
+if 'JAWSDB_URL' in os.environ:
+    url = urljoin().urlparse(os.environ['JAWSDB_URL'])
     print(DATABASES)
 
     # Ensure default database exists.
