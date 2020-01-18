@@ -14,6 +14,8 @@ class ForeignKeysListener(PoolListener):
         db_cursor = dbapi_con.execute('pragma foreign_keys=ON')
 
 DATABASES = {}
+url = urljoin().urlparse(os.environ['DATABASE_URL'])
+print(url)
 if 'DATABASE_URL' in os.environ:
     url = urljoin().urlparse(os.environ['DATABASE_URL'])
     print(DATABASES)
