@@ -6,7 +6,6 @@ from sqlalchemy import create_engine, ForeignKey, ForeignKeyConstraint
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship, backref
 from sqlalchemy.interfaces import PoolListener
-from settings import DATABASES
 from sqlalchemy.dialects.postgresql import JSON
 
 
