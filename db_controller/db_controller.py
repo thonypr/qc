@@ -28,8 +28,7 @@ if 'DATABASE_URL' in os.environ:
         'NAME': url.path[1:],
         'USER': url.username,
         'PASSWORD': url.password,
-        'HOST': url.hostname,
-        'PORT': url.port,
+        'HOST': url.hostname
     })
 # database_url = "sqlite:///data.db"
 # engine = create_engine(database_url, listeners=[ForeignKeysListener()], echo=True)
