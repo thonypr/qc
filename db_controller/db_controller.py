@@ -37,7 +37,7 @@ login = DATABASES['default']['PASSWORD']
 name = DATABASES['default']['NAME']
 url = DATABASES['default']['HOST']
 port = DATABASES['default']['PORT']
-engine = create_engine('mysql+pymysql://{login}:{password}@localhost/{name}?host=localhost?port={port}'.format(
+engine = create_engine('mysql://{login}:{password}@localhost/{name}?host=localhost?port={port}'.format(
     login=login,
     password=password,
     name=name,
