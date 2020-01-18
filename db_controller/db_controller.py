@@ -32,7 +32,7 @@ if 'DATABASE_URL' in os.environ:
 # database_url = "sqlite:///data.db"
 # engine = create_engine(database_url, listeners=[ForeignKeysListener()], echo=True)
 password = DATABASES['default']['PASSWORD']
-login = DATABASES['default']['PASSWORD']
+login = DATABASES['default']['LOGIN']
 name = DATABASES['default']['NAME']
 url = DATABASES['default']['HOST']
 # port = DATABASES['default']['PORT']
