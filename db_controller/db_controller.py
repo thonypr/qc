@@ -15,10 +15,10 @@ class ForeignKeysListener(PoolListener):
         db_cursor = dbapi_con.execute('pragma foreign_keys=ON')
 
 DATABASES = {}
-url = os.environ['JAWSDB_URL']
+url = os.environ['DATABASE_URL']
 print("TEST!" + url)
-if 'JAWSDB_URL' in os.environ:
-    url = urlparse(os.environ['JAWSDB_URL'])
+if 'DATABASE_URL' in os.environ:
+    url = urlparse(os.environ['DATABASE_URL'])
     print(DATABASES)
 
     # Ensure default database exists.
