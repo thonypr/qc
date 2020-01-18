@@ -1,8 +1,7 @@
-import requests
-import json
+import os
 import urllib.parse
 
-bot_token = "1047244780:AAHzWh6dK8N2vB977Yk1TLgXcs9yjv6LX2k"
+bot_token = os.environ['TELEGRAM_DEBUG_TOKEN']
 admin_id = 235486635
 
 

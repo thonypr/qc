@@ -1,10 +1,7 @@
 import os
 import re
-from urllib.parse import urljoin
 
 import telebot
-import requests
-import json
 
 from telebot import types
 
@@ -19,10 +16,7 @@ def object_as_dict(obj):
             for c in inspect(obj).mapper.column_attrs}
 
 
-
-# token = os.environ['688913128:AAFzLAOp9RaSZ3o2hMgZd0pYgrU0k6702fU']
-token = "688913128:AAFzLAOp9RaSZ3o2hMgZd0pYgrU0k6702fU"
-
+token = os.environ['TELEGRAM_TOKEN']
 bot = telebot.TeleBot(token)
 # If you use redis, install this add-on https://elements.heroku.com/addons/heroku-redis
 # r = redis.from_url(os.environ.get("REDIS_URL"))
@@ -91,8 +85,15 @@ new_task_id = 0
 
 add_task_state = 1
 
+editors_ids = [
+    235486635,
+    78364174,
+    231430952,
+    105645437
+]
 
-@bot.message_handler(func=lambda msg: msg.from_user.id == 235486635 and msg.text == "add")
+
+@bot.message_handler(func=lambda msg: msg.from_user.id in editors_ids and msg.text == "add")
 def add_task(message):
     to = message.from_user.id
     bot.send_message(to, "Введи название таски")
