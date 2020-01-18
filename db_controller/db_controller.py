@@ -1,5 +1,6 @@
 import json
 import os
+from urllib.parse import urljoin
 
 from sqlalchemy import create_engine, ForeignKey, ForeignKeyConstraint
 from sqlalchemy.ext.declarative import declarative_base
@@ -12,7 +13,21 @@ class ForeignKeysListener(PoolListener):
     def connect(self, dbapi_con, con_record):
         db_cursor = dbapi_con.execute('pragma foreign_keys=ON')
 
+DATABASES = {}
+if 'DATABASE_URL' in os.environ:
+    url = urljoin().urlparse(os.environ['DATABASE_URL'])
+    print(DATABASES)
 
+    # Ensure default database exists.
+    DATABASES['default'] = DATABASES.get('default', {})
+    # Update with environment configuration.
+    DATABASES['default'].update({
+        'NAME': url.path[1:],
+        'USER': url.username,
+        'PASSWORD': url.password,
+        'HOST': url.hostname,
+        'PORT': url.port,
+    })
 # database_url = "sqlite:///data.db"
 # engine = create_engine(database_url, listeners=[ForeignKeysListener()], echo=True)
 password = DATABASES['PASSWORD']

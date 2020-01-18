@@ -19,21 +19,7 @@ def object_as_dict(obj):
             for c in inspect(obj).mapper.column_attrs}
 
 
-DATABASES = {}
-if 'DATABASE_URL' in os.environ:
-    url = urljoin().urlparse(os.environ['DATABASE_URL'])
-    print(DATABASES)
 
-    # Ensure default database exists.
-    DATABASES['default'] = DATABASES.get('default', {})
-    # Update with environment configuration.
-    DATABASES['default'].update({
-        'NAME': url.path[1:],
-        'USER': url.username,
-        'PASSWORD': url.password,
-        'HOST': url.hostname,
-        'PORT': url.port,
-    })
 token = os.environ['688913128:AAFzLAOp9RaSZ3o2hMgZd0pYgrU0k6702fU']
 
 bot = telebot.TeleBot(token)
