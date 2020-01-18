@@ -32,11 +32,11 @@ if 'JAWSDB_URL' in os.environ:
     })
 # database_url = "sqlite:///data.db"
 # engine = create_engine(database_url, listeners=[ForeignKeysListener()], echo=True)
-password = DATABASES['PASSWORD']
-login = DATABASES['PASSWORD']
-name = DATABASES['NAME']
-url = DATABASES['HOST']
-port = DATABASES['PORT']
+password = DATABASES['default']['PASSWORD']
+login = DATABASES['default']['PASSWORD']
+name = DATABASES['default']['NAME']
+url = DATABASES['default']['HOST']
+port = DATABASES['default']['PORT']
 engine = create_engine('mysql+pymysql://{login}:{password}@localhost/{name}?host=localhost?port={port}'.format(
     login=login,
     password=password,
