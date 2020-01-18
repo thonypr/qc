@@ -35,6 +35,7 @@ if 'JAWSDB_URL' in os.environ:
 password = DATABASES['default']['PASSWORD']
 login = DATABASES['default']['PASSWORD']
 name = DATABASES['default']['NAME']
+name = "p29qne1tj1q5bjkw"
 url = DATABASES['default']['HOST']
 port = DATABASES['default']['PORT']
 engine = create_engine('mysql+pymysql://{login}:{password}@{url}:{port}/{name}'.format(
