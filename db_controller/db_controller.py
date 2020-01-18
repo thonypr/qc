@@ -39,7 +39,7 @@ name = "p29qne1tj1q5bjkw"
 url = DATABASES['default']['HOST']
 port = DATABASES['default']['PORT']
 print(login)
-engine = create_engine('mysql+pymysql://{login}:{password}@{url}:{port}/{name}'.format(
+engine = create_engine('mysql://{login}:{password}@{url}:{port}/{name}'.format(
     login=login,
     password=password,
     name=name,
