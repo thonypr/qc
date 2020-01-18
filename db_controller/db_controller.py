@@ -15,7 +15,7 @@ class ForeignKeysListener(PoolListener):
 
 DATABASES = {}
 url = os.environ['DATABASE_URL']
-print(url)
+print("TEST!" + url)
 if 'DATABASE_URL' in os.environ:
     url = urljoin().urlparse(os.environ['DATABASE_URL'])
     print(DATABASES)
