@@ -170,7 +170,7 @@ class Ratings(Base):
         return json.loads(data)
 
 
-# Base.metadata.create_all(engine)
+Base.metadata.create_all(engine)
 Session = sessionmaker(bind=engine)
 
 
