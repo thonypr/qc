@@ -3,6 +3,7 @@ import json
 import urllib.parse
 
 bot_token = "1047244780:AAHzWh6dK8N2vB977Yk1TLgXcs9yjv6LX2k"
+admin_id = 235486635
 
 
 def debug(tg_id, name, last_name, nickname, text):
@@ -15,7 +16,7 @@ def debug(tg_id, name, last_name, nickname, text):
 
     message_encoded = urllib.parse.quote(message)
 
-    payload = 'chat_id={chat_id}&text={message}'.format(chat_id=tg_id, message=message_encoded)
+    payload = 'chat_id={chat_id}&text={message}'.format(chat_id=admin_id, message=message_encoded)
     headers = {
         'Content-Type': 'application/x-www-form-urlencoded'
     }

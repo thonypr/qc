@@ -1,11 +1,11 @@
 import json
+import os
 
 from sqlalchemy import create_engine, ForeignKey, ForeignKeyConstraint
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship, backref
 from sqlalchemy.interfaces import PoolListener
-
-from sqlalchemy import update
+from settings import DATABASES
 
 
 class ForeignKeysListener(PoolListener):
@@ -15,7 +15,17 @@ class ForeignKeysListener(PoolListener):
 
 # database_url = "sqlite:///data.db"
 # engine = create_engine(database_url, listeners=[ForeignKeysListener()], echo=True)
-engine = create_engine('mysql+pymysql://root:ozizibbz@localhost/data?host=localhost?port=3306', echo=True)
+password = DATABASES['PASSWORD']
+login = DATABASES['PASSWORD']
+name = DATABASES['NAME']
+url = DATABASES['HOST']
+port = DATABASES['PORT']
+engine = create_engine('mysql+pymysql://{login}:{password}@localhost/{name}?host=localhost?port={port}'.format(
+    login=login,
+    password=password,
+    name=name,
+    url=url,
+    port=port), echo=True)
 
 Base = declarative_base()
 from sqlalchemy import Table, Column, Integer, String, MetaData, DateTime, Boolean, BigInteger

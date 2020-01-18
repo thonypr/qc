@@ -7,8 +7,6 @@ import json
 
 from telebot import types
 
-import api
-
 from sqlalchemy import inspect
 
 from bot_debugger import debug
@@ -20,8 +18,7 @@ def object_as_dict(obj):
             for c in inspect(obj).mapper.column_attrs}
 
 
-# token = os.environ['TELEGRAM_TOKEN']
-token = "688913128:AAFzLAOp9RaSZ3o2hMgZd0pYgrU0k6702fU"
+token = os.environ['TELEGRAM_TOKEN']
 
 bot = telebot.TeleBot(token)
 # If you use redis, install this add-on https://elements.heroku.com/addons/heroku-redis
