@@ -6,6 +6,7 @@ pyTelegramBotAPI
 sqlalchemy
 # pymysql
 psycopg2-binary
+pip._vendor.urllib3.packages.rfc3986
 
 # Or you need not a pip package, @'...' specifies git branch
 # git+https://github.com/Kylmakalle/pyTelegramBotAPI.git@feature-BotAPIV3

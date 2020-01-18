@@ -1,9 +1,10 @@
 import os
 import sys
-from urllib.parse import urljoin
 
 # Register database schemes in URLs.
 # urljoin().uses_netloc.append('mysql')
+from pip._vendor.urllib3.packages.rfc3986 import urlparse
+
 DATABASES = {}
 
 try:
@@ -15,7 +16,7 @@ try:
         DATABASES = {}
 
     if 'DATABASE_URL' in os.environ:
-        url = urljoin().urlparse(os.environ['DATABASE_URL'])
+        url = urlparse(os.environ['DATABASE_URL'])
         print(DATABASES)
 
         # Ensure default database exists.
