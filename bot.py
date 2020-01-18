@@ -20,7 +20,8 @@ def object_as_dict(obj):
 
 
 
-token = os.environ['688913128:AAFzLAOp9RaSZ3o2hMgZd0pYgrU0k6702fU']
+# token = os.environ['688913128:AAFzLAOp9RaSZ3o2hMgZd0pYgrU0k6702fU']
+token = "688913128:AAFzLAOp9RaSZ3o2hMgZd0pYgrU0k6702fU"
 
 bot = telebot.TeleBot(token)
 # If you use redis, install this add-on https://elements.heroku.com/addons/heroku-redis
