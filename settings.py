@@ -3,7 +3,7 @@ import sys
 from urllib.parse import urljoin
 
 # Register database schemes in URLs.
-urljoin().uses_netloc.append('mysql')
+# urljoin().uses_netloc.append('mysql')
 DATABASES = {}
 
 try:
