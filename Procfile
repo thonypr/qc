@@ -1,1 +1,1 @@
-worker: sh target/bin/workerBot
+bot: python3 bot.py
