@@ -1,3 +1,4 @@
+import contextlib
 import json
 import os
 from urllib.parse import urljoin, urlparse
@@ -175,143 +176,143 @@ Session = sessionmaker(bind=engine)
 
 
 def get_all_tasks():
-    session = Session()
-    return session.query(Task).all()
+    with contextlib.closing(Session()) as session:
+        return session.query(Task).all()
 
 
 def get_all_available_tasks():
-    session = Session()
-    return session.query(Task).filter_by(active=True).all()
+    with contextlib.closing(Session()) as session:
+        return session.query(Task).filter_by(active=True).all()
 
 
 def get_all_available_tasks_for_user(user_id):
-    all_tasks = get_all_available_tasks()
-    session = Session()
-    #todo: find a way to use many-to-many relationship
-    user = session.query(TGUser).filter_by(tg_id=user_id).first()
-    user_solved = [obj.task_id for obj in list(filter(lambda x: x.is_solved is True, list(user.ratings)))]
-    return [item for item in all_tasks if item.id not in user_solved]
+    with contextlib.closing(Session()) as session:
+        all_tasks = get_all_available_tasks()
+        #todo: find a way to use many-to-many relationship
+        user = session.query(TGUser).filter_by(tg_id=user_id).first()
+        user_solved = [obj.task_id for obj in list(filter(lambda x: x.is_solved is True, list(user.ratings)))]
+        return [item for item in all_tasks if item.id not in user_solved]
 
 
 def add_task(task, answer_pattern, active, name, congrat):
-    session = Session()
-    new_task = Task(task, answer_pattern, active, name, congrat)
-    session.add(new_task)
-    session.commit()
-    return session.query(Task).order_by(Task.id.desc()).first()
+    with contextlib.closing(Session()) as session:
+        new_task = Task(task, answer_pattern, active, name, congrat)
+        session.add(new_task)
+        session.commit()
+        return session.query(Task).order_by(Task.id.desc()).first()
 
 
 def get_task_by_id(task_id):
-    session = Session()
-    return session.query(Task).filter_by(id=task_id).first()
+    with contextlib.closing(Session()) as session:
+        return session.query(Task).filter_by(id=task_id).first()
 
 
 def update_task_state_by_id(task_id, state):
-    session = Session()
-    session.query(Task).filter_by(id=task_id).update({Task.done: state})
-    session.commit()
-    return session.query(Task).filter_by(id=task_id).first()
+    with contextlib.closing(Session()) as session:
+        session.query(Task).filter_by(id=task_id).update({Task.done: state})
+        session.commit()
+        return session.query(Task).filter_by(id=task_id).first()
 
 
 def get_all_states():
-    session = Session()
-    return session.query(State).all()
+    with contextlib.closing(Session()) as session:
+        return session.query(State).all()
 
 
 def get_state_by_id(id):
-    session = Session()
-    return session.query(State).filter_by(id=id).first()
+    with contextlib.closing(Session()) as session:
+        return session.query(State).filter_by(id=id).first()
 
 
 def add_state(name):
-    session = Session()
-    state = State(name)
-    session.add(state)
-    session.commit()
-    return session.query(State).order_by(State.id.desc()).first()
+    with contextlib.closing(Session()) as session:
+        state = State(name)
+        session.add(state)
+        session.commit()
+        return session.query(State).order_by(State.id.desc()).first()
 
 
 def get_all_users():
-    session = Session()
-    return session.query(TGUser).all()
+    with contextlib.closing(Session()) as session:
+        return session.query(TGUser).all()
 
 
 def get_user_by_tgid(tg_id):
-    session = Session()
-    return session.query(TGUser).filter_by(tg_id=tg_id).first()
+    with contextlib.closing(Session()) as session:
+        return session.query(TGUser).filter_by(tg_id=tg_id).first()
 
 
 def get_user_by_id(state_id):
-    session = Session()
-    return session.query(TGUser).filter_by(id=state_id).first()
+    with contextlib.closing(Session()) as session:
+        return session.query(TGUser).filter_by(id=state_id).first()
 
 
 def get_user_by_tgid(tgid):
-    session = Session()
-    return session.query(TGUser).filter_by(tg_id=tgid).first()
+    with contextlib.closing(Session()) as session:
+        return session.query(TGUser).filter_by(tg_id=tgid).first()
 
 
 def add_user(tg_id, tg_first_name, tg_last_name, tg_nick, state):
-    session = Session()
-    user = TGUser(tg_id, tg_first_name, tg_last_name, tg_nick, state)
-    session.add(user)
-    session.commit()
-    return user
+    with contextlib.closing(Session()) as session:
+        user = TGUser(tg_id, tg_first_name, tg_last_name, tg_nick, state)
+        session.add(user)
+        session.commit()
+        return user
 
 
 def get_resources_for_task_id(task_id):
-    session = Session()
-    return session.query(Resource).filter_by(task_id=task_id)
+    with contextlib.closing(Session()) as session:
+        return session.query(Resource).filter_by(task_id=task_id)
 
 
 def get_resources_answer_for_task_id(task_id):
-    session = Session()
-    return session.query(ResourceAnswer).filter_by(task_id=task_id)
+    with contextlib.closing(Session()) as session:
+        return session.query(ResourceAnswer).filter_by(task_id=task_id)
 
 
 def add_resource(tg_id, type, task_id, caption):
-    session = Session()
-    new_resource = Resource(tg_id, type, task_id, caption)
-    session.add(new_resource)
-    session.commit()
-    return session.query(Resource).order_by(Resource.id.desc()).first()
+    with contextlib.closing(Session()) as session:
+        new_resource = Resource(tg_id, type, task_id, caption)
+        session.add(new_resource)
+        session.commit()
+        return session.query(Resource).order_by(Resource.id.desc()).first()
 
 
 def add_answer_resource(tg_id, type, task_id, caption):
-    session = Session()
-    new_resource = ResourceAnswer(tg_id, type, task_id, caption)
-    session.add(new_resource)
-    session.commit()
-    return session.query(ResourceAnswer).order_by(ResourceAnswer.id.desc()).first()
+    with contextlib.closing(Session()) as session:
+        new_resource = ResourceAnswer(tg_id, type, task_id, caption)
+        session.add(new_resource)
+        session.commit()
+        return session.query(ResourceAnswer).order_by(ResourceAnswer.id.desc()).first()
 
 
 def update_user_state_by_id(tg_id, state_id):
-    session = Session()
-    session.query(TGUser).filter_by(tg_id=tg_id).update({TGUser.state_id: state_id})
-    session.commit()
-    return session.query(TGUser).filter_by(tg_id=tg_id).first()
+    with contextlib.closing(Session()) as session:
+        session.query(TGUser).filter_by(tg_id=tg_id).update({TGUser.state_id: state_id})
+        session.commit()
+        return session.query(TGUser).filter_by(tg_id=tg_id).first()
 
 
 def add_rating_for_task_from_user(rating, tguser_id, task_id):
-    session = Session()
+    with contextlib.closing(Session()) as session:
 
-    task = session.query(Ratings).filter_by(tguser_id=tguser_id, task_id=task_id)
-    if task:
-        task.update({Ratings.rating: rating})
-    else:
-        task.update({Ratings.rating: 0})
+        task = session.query(Ratings).filter_by(tguser_id=tguser_id, task_id=task_id)
+        if task:
+            task.update({Ratings.rating: rating})
+        else:
+           task.update({Ratings.rating: 0})
 
-    session.commit()
-    return session.query(Ratings).filter_by(tguser_id=tguser_id, task_id=task_id).first()
+        session.commit()
+        return session.query(Ratings).filter_by(tguser_id=tguser_id, task_id=task_id).first()
 
 
 def mark_task_as_solved_for_user(tguser_id, task_id):
-    session = Session()
-    new_rating = Ratings(tguser_id=tguser_id, task_id=task_id)
-    new_rating.is_solved = True
+    with contextlib.closing(Session()) as session:
+        new_rating = Ratings(tguser_id=tguser_id, task_id=task_id)
+        new_rating.is_solved = True
 
-    session.add(new_rating)
-    session.commit()
-    return new_rating
+        session.add(new_rating)
+        session.commit()
+        return new_rating
 
 
