@@ -35,12 +35,13 @@ password = DATABASES['default']['PASSWORD']
 login = DATABASES['default']['USER']
 name = DATABASES['default']['NAME']
 url = DATABASES['default']['HOST']
-# port = DATABASES['default']['PORT']
+port = DATABASES['default']['PORT']
 # engine = create_engine('mysql+pymysql://{login}:{password}@{url}:{port}/{name}'.format(
 # postgresql://scott:tiger@localhost/mydatabase
 engine = create_engine('postgresql://{login}:{password}@{url}/{name}'.format(
     login=login,
     password=password,
+    # port=port,
     name=name,
     url=url), echo=True)
 

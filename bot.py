@@ -145,6 +145,7 @@ def get_resource(message):
                                                         res["res_caption"])
             bot.send_message(message.from_user.id, 'Ресурс {id} добавлен!'.format(id=res["res_id"]))
         bot.send_message(message.from_user.id, 'Скинь ресурсы ответа на задание или напиши no')
+        task_res = []
         bot.register_next_step_handler(message, get_answer_resources)
     else:
         if message.content_type == "photo":
@@ -179,6 +180,7 @@ def get_answer_resources(message):
             resource_in_db = db_controller.add_answer_resource(res["res_id"], res["res_type"], new_task_id,
                                                                res["res_caption"])
             bot.send_message(message.from_user.id, 'Ресурс {id} добавлен!'.format(id=res["res_id"]))
+        answ_res = []
         bot.send_message(message.from_user.id, 'Задание добавлено!')
         return
     else:
