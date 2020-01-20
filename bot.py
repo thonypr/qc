@@ -93,6 +93,28 @@ editors_ids = [
 ]
 
 
+@bot.message_handler(func=lambda msg: msg.from_user.id in editors_ids and msg.text == "clear")
+def add_task(message):
+    to = message.from_user.id
+    global task_name
+    global task_descr
+    global task_reg
+    global task_congrat
+    global task_res
+    global answ_res
+    global task_finished
+    global new_task_id
+    task_name = ""
+    task_descr = ""
+    task_reg = ""
+    task_congrat = ""
+    task_res = []
+    answ_res = []
+    task_finished = False
+    new_task_id = 0
+    bot.send_message(to, "Очищено!")
+
+
 @bot.message_handler(func=lambda msg: msg.from_user.id in editors_ids and msg.text == "add")
 def add_task(message):
     to = message.from_user.id
