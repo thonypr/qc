@@ -94,7 +94,7 @@ editors_ids = [
 
 
 @bot.message_handler(func=lambda msg: msg.from_user.id in editors_ids and msg.text == "clear")
-def add_task(message):
+def clear(message):
     to = message.from_user.id
     global task_name
     global task_descr
@@ -123,106 +123,124 @@ def add_task(message):
 
 
 def get_name(message):
-    global task_name
-    task_name = message.text
-    bot.send_message(message.from_user.id, 'Укажи текст задания')
-    bot.register_next_step_handler(message, get_descr)
+    if message.text != "clear":
+        global task_name
+        task_name = message.text
+        bot.send_message(message.from_user.id, 'Укажи текст задания')
+        bot.register_next_step_handler(message, get_descr)
+    else:
+        bot.register_next_step_handler(message, clear)
 
 
 def get_descr(message):
-    global task_descr
-    task_descr = message.text
-    bot.send_message(message.from_user.id, 'Укажи регулярку под ответ')
-    bot.register_next_step_handler(message, get_regex)
+    if message.text != "clear":
+        global task_descr
+        task_descr = message.text
+        bot.send_message(message.from_user.id, 'Укажи регулярку под ответ')
+        bot.register_next_step_handler(message, get_regex)
+    else:
+        bot.register_next_step_handler(message, clear)
 
 
 def get_regex(message):
-    global task_reg
-    task_reg = message.text
-    bot.send_message(message.from_user.id, 'Укажи поздравление для задания')
-    bot.register_next_step_handler(message, get_congrat)
+    if message.text != "clear":
+        global task_reg
+        task_reg = message.text
+        bot.send_message(message.from_user.id, 'Укажи поздравление для задания')
+        bot.register_next_step_handler(message, get_congrat)
+    else:
+        bot.register_next_step_handler(message, clear)
 
 
 def get_congrat(message):
-    global task_congrat
-    task_congrat = message.text
-    bot.send_message(message.from_user.id, 'Скинь ресурсы под задание или напиши no')
-    bot.register_next_step_handler(message, get_resource)
+    if message.text != "clear":
+        global task_congrat
+        task_congrat = message.text
+        bot.send_message(message.from_user.id, 'Скинь ресурсы под задание или напиши no')
+        bot.register_next_step_handler(message, get_resource)
+    else:
+        bot.register_next_step_handler(message, clear)
 
 
 def get_resource(message):
-    global task_res
-    global new_task_id
-    res_id = ""
-    res_type = ""
-    res_caption = ""
-    if message.content_type == "text" and message.text == "no":
-        # we need to actually add task now to database
-        task_in_db = db_controller.add_task(task_descr, task_reg, True, task_name, task_congrat)
-        new_task_id = task_in_db.id
-        db_controller.add_state("VIEW_{id}".format(id=task_in_db.id))
-        # add resources
-        for res in task_res:
-            resource_in_db = db_controller.add_resource(res["res_id"], res["res_type"], task_in_db.id,
-                                                        res["res_caption"])
-            bot.send_message(message.from_user.id, 'Ресурс {id} добавлен!'.format(id=res["res_id"]))
-        bot.send_message(message.from_user.id, 'Скинь ресурсы ответа на задание или напиши no')
-        task_res = []
-        bot.register_next_step_handler(message, get_answer_resources)
-    else:
-        if message.content_type == "photo":
-            res_id = message.photo[0].file_id
-            res_type = "photo"
-            res_caption = message.caption
-        elif message.content_type == "audio":
-            res_id = message.audio[0].file_id
-            res_type = "audio"
-            res_caption = message.caption
-        elif message.content_type == "document":
-            res_id = message.document.file_id
-            res_type = "document"
-            res_caption = message.caption
-        res_item = {"res_id": res_id, "res_type": res_type, "res_caption": res_caption}
+    if message.text != "clear":
+        global task_res
+        global new_task_id
+        res_id = ""
+        res_type = ""
+        res_caption = ""
+        if message.content_type == "text" and message.text == "no":
+            # we need to actually add task now to database
+            task_in_db = db_controller.add_task(task_descr, task_reg, True, task_name, task_congrat)
+            new_task_id = task_in_db.id
+            db_controller.add_state("VIEW_{id}".format(id=task_in_db.id))
+            # add resources
+            for res in task_res:
+                resource_in_db = db_controller.add_resource(res["res_id"], res["res_type"], task_in_db.id,
+                                                            res["res_caption"])
+                bot.send_message(message.from_user.id, 'Ресурс {id} добавлен!'.format(id=res["res_id"]))
+            bot.send_message(message.from_user.id, 'Скинь ресурсы ответа на задание или напиши no')
+            task_res = []
+            bot.register_next_step_handler(message, get_answer_resources)
+        else:
+            if message.content_type == "photo":
+                res_id = message.photo[0].file_id
+                res_type = "photo"
+                res_caption = message.caption
+            elif message.content_type == "audio":
+                res_id = message.audio[0].file_id
+                res_type = "audio"
+                res_caption = message.caption
+            elif message.content_type == "document":
+                res_id = message.document.file_id
+                res_type = "document"
+                res_caption = message.caption
+            res_item = {"res_id": res_id, "res_type": res_type, "res_caption": res_caption}
 
-        task_res.append(res_item)
-        bot.send_message(message.from_user.id, 'Скинь ресурсы под задание или напиши no')
-        bot.register_next_step_handler(message, get_resource)
+            task_res.append(res_item)
+            bot.send_message(message.from_user.id, 'Скинь ресурсы под задание или напиши no')
+            bot.register_next_step_handler(message, get_resource)
+    else:
+        bot.register_next_step_handler(message, clear)
 
 
 def get_answer_resources(message):
-    global answ_res
-    global new_task_id
+    if message.text != "clear":
+        global answ_res
+        global new_task_id
 
-    res_id = ""
-    res_type = ""
-    res_caption = ""
-    if message.content_type == "text" and message.text == "no":
-        # add resources to answers
-        for res in answ_res:
-            resource_in_db = db_controller.add_answer_resource(res["res_id"], res["res_type"], new_task_id,
-                                                               res["res_caption"])
-            bot.send_message(message.from_user.id, 'Ресурс {id} добавлен!'.format(id=res["res_id"]))
-        answ_res = []
-        bot.send_message(message.from_user.id, 'Задание добавлено!')
-        return
+        res_id = ""
+        res_type = ""
+        res_caption = ""
+        if message.content_type == "text" and message.text == "no":
+            # add resources to answers
+            for res in answ_res:
+                resource_in_db = db_controller.add_answer_resource(res["res_id"], res["res_type"], new_task_id,
+                                                                   res["res_caption"])
+                bot.send_message(message.from_user.id, 'Ресурс {id} добавлен!'.format(id=res["res_id"]))
+            answ_res = []
+            bot.send_message(message.from_user.id, 'Задание добавлено!')
+            return
+        else:
+            if message.content_type == "photo":
+                res_id = message.photo[0].file_id
+                res_type = "photo"
+                res_caption = message.caption
+            elif message.content_type == "audio":
+                res_id = message.audio[0].file_id
+                res_type = "audio"
+                res_caption = message.caption
+            elif message.content_type == "document":
+                res_id = message.document.file_id
+                res_type = "document"
+                res_caption = message.caption
+            res_item = {"res_id": res_id, "res_type": res_type, "res_caption": res_caption}
+
+            answ_res.append(res_item)
+            bot.send_message(message.from_user.id, 'Скинь ресурсы ответа под задание или напиши no')
+            bot.register_next_step_handler(message, get_answer_resources)
     else:
-        if message.content_type == "photo":
-            res_id = message.photo[0].file_id
-            res_type = "photo"
-            res_caption = message.caption
-        elif message.content_type == "audio":
-            res_id = message.audio[0].file_id
-            res_type = "audio"
-            res_caption = message.caption
-        elif message.content_type == "document":
-            res_id = message.document.file_id
-            res_type = "document"
-            res_caption = message.caption
-        res_item = {"res_id": res_id, "res_type": res_type, "res_caption": res_caption}
-
-        answ_res.append(res_item)
-        bot.send_message(message.from_user.id, 'Скинь ресурсы ответа под задание или напиши no')
-        bot.register_next_step_handler(message, get_answer_resources)
+        bot.register_next_step_handler(message, clear)
 
 
 @bot.message_handler(content_types=["sticker", "pinned_message", "photo", "audio"])
