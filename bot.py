@@ -94,26 +94,41 @@ editors_ids = [
 
 
 @bot.message_handler(func=lambda msg: msg.from_user.id in editors_ids and msg.text == "clear")
+def clear(message):
+    to = message.from_user.id
+    global task_name
+    global task_descr
+    global task_reg
+    global task_congrat
+    global task_res
+    global answ_res
+    global task_finished
+    global new_task_id
+    task_name = ""
+    task_descr = ""
+    task_reg = ""
+    task_congrat = ""
+    task_res = []
+    answ_res = []
+    task_finished = False
+    new_task_id = 0
+    bot.send_message(to, "Очищено!")
+
+
+@bot.message_handler(func=lambda msg: msg.from_user.id in editors_ids and msg.text == "show")
 def show(message):
     to = message.from_user.id
     available_tasks = db_controller.get_all_tasks()
     if available_tasks:
         keys = makeKeyboard(available_tasks)
         bot.send_message(chat_id=to,
-                         text="Список всех заданий",
+                         text="Доступные для решения задания",
                          reply_markup=keys,
                          parse_mode='HTML')
     else:
         bot.send_message(chat_id=to,
                          text="Ого! У меня нет больше для тебя задач!",
                          parse_mode='HTML')
-
-
-@bot.message_handler(func=lambda msg: msg.from_user.id in editors_ids and msg.text == "show")
-def add_task(message):
-    to = message.from_user.id
-    bot.send_message(to, "Введи название таски")
-    bot.register_next_step_handler(message, get_name)
 
 
 @bot.message_handler(func=lambda msg: msg.from_user.id in editors_ids and msg.text == "add")
