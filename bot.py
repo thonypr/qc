@@ -236,6 +236,10 @@ def get_answer_resources(message):
                 bot.send_message(message.from_user.id, 'Ресурс {id} добавлен!'.format(id=res["res_id"]))
             answ_res = []
             bot.send_message(message.from_user.id, 'Задание добавлено!')
+            users_to_notify = db_controller.get_all_users()
+            for useritem in users_to_notify:
+                bot.send_message(useritem.tg_id, 'Добавлено новое задание!')
+
             return
         else:
             if message.content_type == "photo":
