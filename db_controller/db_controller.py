@@ -94,7 +94,7 @@ class Task(Base):
     __tablename__ = "tasks"
     id = Column(Integer, primary_key=True)
     name = Column(String(50))
-    task = Column(String(50))
+    task = Column(String(250))
     answer_pattern = Column(String(50))
     active = Column(Boolean)
     congrat = Column(String(50))
