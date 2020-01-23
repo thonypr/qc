@@ -63,11 +63,11 @@ def makeKeyboard(list):
 def makeRatingKeyboard(task_id):
     markup = types.InlineKeyboardMarkup()
 
-    list = [{"code": 1, "text": "Не понравился"},
-            {"code": 2, "text": "Неплохо, но можно и лучше"},
-            {"code": 3, "text": "Ни рыба - ни мясо"},
-            {"code": 4, "text": "Понравился"},
-            {"code": 5, "text": "Супер! Побольше бы таких!"},
+    list = [{"code": 1, "text": "1"},
+            {"code": 2, "text": "2"},
+            {"code": 3, "text": "3"},
+            {"code": 4, "text": "4"},
+            {"code": 5, "text": "5"},
             {"code": 0, "text": "Затрудняюсь оценить"}]
 
     for item in list:
@@ -155,7 +155,8 @@ def get_descr(message):
     if message.text != "clear":
         global task_descr
         task_descr = message.text
-        bot.send_message(message.from_user.id, 'Укажи регулярку под ответ')
+        bot.send_message(message.from_user.id, 'Укажи регулярку под ответ \n'
+                                               '(обычно просто слово или фраза, являющаяся ответом)')
         bot.register_next_step_handler(message, get_regex)
     else:
         bot.register_next_step_handler(message, clear)
@@ -165,7 +166,7 @@ def get_regex(message):
     if message.text != "clear":
         global task_reg
         task_reg = message.text
-        bot.send_message(message.from_user.id, 'Укажи поздравление для задания')
+        bot.send_message(message.from_user.id, 'Укажи комментарий для задания')
         bot.register_next_step_handler(message, get_congrat)
     else:
         bot.register_next_step_handler(message, clear)
