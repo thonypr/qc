@@ -21,6 +21,9 @@ bot = telebot.TeleBot(token)
 # If you use redis, install this add-on https://elements.heroku.com/addons/heroku-redis
 # r = redis.from_url(os.environ.get("REDIS_URL"))
 
+bot.send_message(chat_id=235486635,
+                 text="Перезапуск...",
+                 parse_mode='HTML')
 states = {}
 
 
